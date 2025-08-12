@@ -157,10 +157,10 @@ public class PaymentController {
     				.orElseThrow(() -> new PaymentNotFoundException(id));
     		User payee = payment.getPayee();
     		payeeModels.add(EntityModel.of(payee,
-    				linkTo(methodOn(UserControllerRest.class).getUser(payee.getId())).withSelfRel(),
-        	        linkTo(methodOn(UserControllerRest.class).all()).withRel("users")));
+    				linkTo(methodOn(UserController.class).getUser(payee.getId())).withSelfRel(),
+        	        linkTo(methodOn(UserController.class).all()).withRel("users")));
     	}
-    	return CollectionModel.of(payeeModels, linkTo(methodOn(UserControllerRest.class).all()).withSelfRel());
+    	return CollectionModel.of(payeeModels, linkTo(methodOn(UserController.class).all()).withSelfRel());
     }
     
 
