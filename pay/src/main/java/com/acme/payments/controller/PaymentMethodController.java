@@ -18,11 +18,11 @@ import com.acme.payments.model.PaymentMethod;
 import com.acme.payments.repository.PaymentMethodRepository;
 
 @RestController
-public class PaymentMethodControllerRest {
+public class PaymentMethodController {
 	
 	private final PaymentMethodRepository repository;
 	
-	PaymentMethodControllerRest(PaymentMethodRepository repository) {
+	PaymentMethodController(PaymentMethodRepository repository) {
 		this.repository = repository;
 	}
 	
@@ -34,12 +34,12 @@ public class PaymentMethodControllerRest {
     	List<EntityModel<PaymentMethod>> paymentMethodModels = new ArrayList<EntityModel<PaymentMethod>>();
     	for (PaymentMethod paymentMethod : paymentMethods) {
     		paymentMethodModels.add(EntityModel.of(paymentMethod,
-    				linkTo(methodOn(PaymentMethodControllerRest.class).getPaymentMethod(paymentMethod.getId())).withSelfRel(),
-    				linkTo(methodOn(PaymentMethodControllerRest.class).all()).withRel("payment methods")));
+    				linkTo(methodOn(PaymentMethodController.class).getPaymentMethod(paymentMethod.getId())).withSelfRel(),
+    				linkTo(methodOn(PaymentMethodController.class).all()).withRel("payment methods")));
     	}
     	
     	return CollectionModel.of(paymentMethodModels, 
-    			linkTo(methodOn(PaymentMethodControllerRest.class).all()).withSelfRel());
+    			linkTo(methodOn(PaymentMethodController.class).all()).withSelfRel());
     }
     // end::get-aggregate-root[]
     
@@ -48,7 +48,7 @@ public class PaymentMethodControllerRest {
     	PaymentMethod paymentMethod = repository.findById(id)
     			.orElseThrow(() -> new PaymentMethodNotFoundException(id));
         return EntityModel.of(paymentMethod,
-        		linkTo(methodOn(PaymentMethodControllerRest.class).getPaymentMethod(id)).withSelfRel(),
-    	        linkTo(methodOn(PaymentMethodControllerRest.class).all()).withRel("payment methods"));
+        		linkTo(methodOn(PaymentMethodController.class).getPaymentMethod(id)).withSelfRel(),
+    	        linkTo(methodOn(PaymentMethodController.class).all()).withRel("payment methods"));
     }
 }

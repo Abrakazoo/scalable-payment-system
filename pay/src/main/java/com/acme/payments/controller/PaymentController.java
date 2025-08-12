@@ -126,13 +126,13 @@ public class PaymentController {
     				.orElseThrow(() -> new PaymentNotFoundException(id));	
     		PaymentMethod paymentMethod = payment.getPaymentMethod();
     		paymentMethodModels.add(EntityModel.of(paymentMethod,
-    				linkTo(methodOn(PaymentMethodControllerRest.class)
+    				linkTo(methodOn(PaymentMethodController.class)
     						.getPaymentMethod(paymentMethod.getId())).withSelfRel(),
-        	        linkTo(methodOn(PaymentMethodControllerRest.class)
+        	        linkTo(methodOn(PaymentMethodController.class)
         	        		.all()).withRel("payments")));
     	}
     	return CollectionModel.of(paymentMethodModels, 
-    			linkTo(methodOn(PaymentMethodControllerRest.class).all()).withSelfRel());
+    			linkTo(methodOn(PaymentMethodController.class).all()).withSelfRel());
     }
     
     /**
