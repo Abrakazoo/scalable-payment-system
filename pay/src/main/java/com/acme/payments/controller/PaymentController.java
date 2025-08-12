@@ -140,7 +140,7 @@ public class PaymentController {
 	 * example:
 	 * http://localhost:8081/payments/payees?payer_id=e8af92bd-1910-421e-8de0-cb3dcf9bf44d
      * @param payerId The UUID of the payer as a String
-     * @return Payeed associated with the payer as a collection model of User entities
+     * @return Payees associated with the payer as a collection model of User entities
      */
     @GetMapping("payments/payees")
     @ResponseBody
