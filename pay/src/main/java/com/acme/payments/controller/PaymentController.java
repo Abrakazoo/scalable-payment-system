@@ -111,16 +111,14 @@ public class PaymentController {
 	 * 
 	 * @param payerId the UUID of the payer as a String
      * @return Payment methods associated with payer as a collection model
-	 * @throws 
-    */
+     */
     @GetMapping("payments/payment_methods")
     @ResponseBody
     CollectionModel<EntityModel<PaymentMethod>> getPaymentMethodsByPayerId(
     		@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<UUID>();
+    	List<UUID> payerIdList = new ArrayList<>();
     	payerIdList.add(UUID.fromString(payerId));
-    	List<EntityModel<PaymentMethod>> paymentMethodModels = 
-			new ArrayList<EntityModel<PaymentMethod>>();
+    	List<EntityModel<PaymentMethod>> paymentMethodModels = new ArrayList<>();
     	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
     	for(Payer payer : payerPayments) {
     		UUID id = payer.getPaymentId();
@@ -147,8 +145,8 @@ public class PaymentController {
     @GetMapping("payments/payees")
     @ResponseBody
     CollectionModel<EntityModel<User>> getPayeesByPayerId(@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<UUID>();
-    	List<EntityModel<User>> payeeModels = new ArrayList<EntityModel<User>>();
+    	List<UUID> payerIdList = new ArrayList<>();
+    	List<EntityModel<User>> payeeModels = new ArrayList<>();
     	payerIdList.add(UUID.fromString(payerId));
     	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
     	for(Payer payer : payerPayments) {
