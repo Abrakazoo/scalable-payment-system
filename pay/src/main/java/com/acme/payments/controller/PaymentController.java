@@ -111,16 +111,14 @@ public class PaymentController {
 	 * 
 	 * @param payerId the UUID of the payer as a String
      * @return Payment methods associated with payer as a collection model
-	 * @throws 
-    */
+     */
     @GetMapping("payments/payment_methods")
     @ResponseBody
     CollectionModel<EntityModel<PaymentMethod>> getPaymentMethodsByPayerId(
     		@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<UUID>();
+    	List<UUID> payerIdList = new ArrayList<>();
     	payerIdList.add(UUID.fromString(payerId));
-    	List<EntityModel<PaymentMethod>> paymentMethodModels = 
-			new ArrayList<EntityModel<PaymentMethod>>();
+    	List<EntityModel<PaymentMethod>> paymentMethodModels = new ArrayList<>();
     	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
     	for(Payer payer : payerPayments) {
     		UUID id = payer.getPaymentId();
@@ -128,13 +126,13 @@ public class PaymentController {
     				.orElseThrow(() -> new PaymentNotFoundException(id));	
     		PaymentMethod paymentMethod = payment.getPaymentMethod();
     		paymentMethodModels.add(EntityModel.of(paymentMethod,
-    				linkTo(methodOn(PaymentMethodControllerRest.class)
+    				linkTo(methodOn(PaymentMethodController.class)
     						.getPaymentMethod(paymentMethod.getId())).withSelfRel(),
-        	        linkTo(methodOn(PaymentMethodControllerRest.class)
+        	        linkTo(methodOn(PaymentMethodController.class)
         	        		.all()).withRel("payments")));
     	}
     	return CollectionModel.of(paymentMethodModels, 
-    			linkTo(methodOn(PaymentMethodControllerRest.class).all()).withSelfRel());
+    			linkTo(methodOn(PaymentMethodController.class).all()).withSelfRel());
     }
     
     /**
@@ -142,13 +140,13 @@ public class PaymentController {
 	 * example:
 	 * http://localhost:8081/payments/payees?payer_id=e8af92bd-1910-421e-8de0-cb3dcf9bf44d
      * @param payerId The UUID of the payer as a String
-     * @return Payeed associated with the payer as a collection model of User entities
+     * @return Payees associated with the payer as a collection model of User entities
      */
     @GetMapping("payments/payees")
     @ResponseBody
     CollectionModel<EntityModel<User>> getPayeesByPayerId(@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<UUID>();
-    	List<EntityModel<User>> payeeModels = new ArrayList<EntityModel<User>>();
+    	List<UUID> payerIdList = new ArrayList<>();
+    	List<EntityModel<User>> payeeModels = new ArrayList<>();
     	payerIdList.add(UUID.fromString(payerId));
     	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
     	for(Payer payer : payerPayments) {
@@ -157,10 +155,10 @@ public class PaymentController {
     				.orElseThrow(() -> new PaymentNotFoundException(id));
     		User payee = payment.getPayee();
     		payeeModels.add(EntityModel.of(payee,
-    				linkTo(methodOn(UserControllerRest.class).getUser(payee.getId())).withSelfRel(),
-        	        linkTo(methodOn(UserControllerRest.class).all()).withRel("users")));
+    				linkTo(methodOn(UserController.class).getUser(payee.getId())).withSelfRel(),
+        	        linkTo(methodOn(UserController.class).all()).withRel("users")));
     	}
-    	return CollectionModel.of(payeeModels, linkTo(methodOn(UserControllerRest.class).all()).withSelfRel());
+    	return CollectionModel.of(payeeModels, linkTo(methodOn(UserController.class).all()).withSelfRel());
     }
     
 

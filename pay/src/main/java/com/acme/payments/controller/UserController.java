@@ -18,11 +18,11 @@ import com.acme.payments.model.User;
 import com.acme.payments.repository.UserRepository;
 
 @RestController
-public class UserControllerRest {
+public class UserController {
 	
 	private final UserRepository repository;
 	
-	UserControllerRest(UserRepository repository) {
+	UserController(UserRepository repository) {
 		this.repository = repository;
 	}
 	
@@ -31,15 +31,15 @@ public class UserControllerRest {
     @GetMapping("/users_rest")
     CollectionModel<EntityModel<User>> all() {
     	Iterable<User> users = repository.findAll();  
-    	List<EntityModel<User>> userModels = new ArrayList<EntityModel<User>>();
+    	List<EntityModel<User>> userModels = new ArrayList<>();
     	for (User user : users) {
     		userModels.add(EntityModel.of(user,
-    				linkTo(methodOn(UserControllerRest.class).getUser(user.getId())).withSelfRel(),
-    				linkTo(methodOn(UserControllerRest.class).all()).withRel("users")));
+    				linkTo(methodOn(UserController.class).getUser(user.getId())).withSelfRel(),
+    				linkTo(methodOn(UserController.class).all()).withRel("users")));
     	}
     	
     	return CollectionModel.of(userModels, 
-    			linkTo(methodOn(UserControllerRest.class).all()).withSelfRel());
+    			linkTo(methodOn(UserController.class).all()).withSelfRel());
     }
     // end::get-aggregate-root[]
     
@@ -48,7 +48,7 @@ public class UserControllerRest {
     	User user = repository.findById(id)
     			.orElseThrow(() -> new UserNotFoundException(id));
         return EntityModel.of(user,
-        		linkTo(methodOn(UserControllerRest.class).getUser(id)).withSelfRel(),
-    	        linkTo(methodOn(UserControllerRest.class).all()).withRel("users"));
+        		linkTo(methodOn(UserController.class).getUser(id)).withSelfRel(),
+    	        linkTo(methodOn(UserController.class).all()).withRel("users"));
     }
 }
