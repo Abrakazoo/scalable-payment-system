@@ -1,17 +1,16 @@
 package com.acme.payments.init;
 
-import java.util.UUID;
-
+import com.acme.payments.model.Payer;
+import com.acme.payments.model.Payment;
+import com.acme.payments.repository.PayerRepository;
+import com.acme.payments.repository.PaymentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.acme.payments.model.Payer;
-import com.acme.payments.model.Payment;
-import com.acme.payments.repository.PayerRepository;
-import com.acme.payments.repository.PaymentRepository;
+import java.util.UUID;
 
 @Configuration
 public class LoadDB {
@@ -35,30 +34,30 @@ public class LoadDB {
 								   PayerRepository payerRepository) {
 
 	    return args -> {
-	    	log.info("Preloading payment one: " + paymentRepository.save(
-	    		  new Payment(PAYMENT_ONE_ID,	    				  	  
-	    				  	  PAYMENT_ONE_AMOUNT,
-	    				  	  USD,
-	    				  	  US,
-	    				  	  PAYER_ONE_ID,
-	    				  	  PAYEE_ONE_ID,
-	    				  	  PAYMENT_METHOD_ONE_ID,
-	    				  	  ORDER_ONE_ID)));
+            log.info("Preloading payment one: {}", paymentRepository.save(
+                    new Payment(PAYMENT_ONE_ID,
+                            PAYMENT_ONE_AMOUNT,
+                            USD,
+                            US,
+                            PAYER_ONE_ID,
+                            PAYEE_ONE_ID,
+                            PAYMENT_METHOD_ONE_ID,
+                            ORDER_ONE_ID)));
 	    	// Save payment id to auxiliary "Payer" table
-	    	log.info("Preloading payer one: " + payerRepository.save(
-    				new Payer(UUID.fromString(PAYER_ONE_ID), UUID.fromString(PAYMENT_ONE_ID))));
-	    	log.info("Preloading payment two: " +paymentRepository.save(
-	    		  new Payment(PAYMENT_TWO_ID,
-    				  	  	  PAYMENT_TWO_AMOUNT,
-    				  	  	  USD,
-    				  	  	  US,
-	    				  	  PAYER_ONE_ID,
-				  	  	  	  PAYEE_ONE_ID,
-	    				  	  PAYMENT_METHOD_ONE_ID,
-	    				  	  ORDER_TWO_ID)));
+            log.info("Preloading payer one: {}", payerRepository.save(
+                    new Payer(UUID.fromString(PAYER_ONE_ID), UUID.fromString(PAYMENT_ONE_ID))));
+            log.info("Preloading payment two: {}", paymentRepository.save(
+                    new Payment(PAYMENT_TWO_ID,
+                            PAYMENT_TWO_AMOUNT,
+                            USD,
+                            US,
+                            PAYER_ONE_ID,
+                            PAYEE_ONE_ID,
+                            PAYMENT_METHOD_ONE_ID,
+                            ORDER_TWO_ID)));
 	    	// Save payment id to auxiliary "Payer" table
-	    	log.info("Preloading payer two: " + payerRepository.save(
-    				new Payer(UUID.fromString(PAYER_ONE_ID), UUID.fromString(PAYMENT_ONE_ID))));
+            log.info("Preloading payer two: {}", payerRepository.save(
+                    new Payer(UUID.fromString(PAYER_ONE_ID), UUID.fromString(PAYMENT_ONE_ID))));
 	    };
 	  }
 }
