@@ -19,5 +19,5 @@ jobs:
         - name: Build with Maven
           run: | 
             cd pay
-            docker compose up
+            docker compose up db
             mvn clean install
