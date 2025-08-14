@@ -11,7 +11,7 @@ public class PaymentOrder {
 	@Id
 	private UUID id;
 	
-	PaymentOrder() {}
+	public PaymentOrder() {}
 	
 	PaymentOrder(String id) {
 		this.id = UUID.fromString(id); 

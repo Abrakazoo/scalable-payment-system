@@ -11,7 +11,7 @@ public class User {
 	@Id
 	private UUID id;
 
-	User() {}
+	public User() {}
 	
 	User(String id) {
 		this.id = UUID.fromString(id);

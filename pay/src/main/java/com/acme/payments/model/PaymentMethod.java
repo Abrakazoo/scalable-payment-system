@@ -12,7 +12,7 @@ public class PaymentMethod {
 	@Id
 	private UUID id;
 	
-	PaymentMethod() {}
+	public PaymentMethod() {}
 	
 	public PaymentMethod(String paymentMethodId) {
 		this.id = UUID.fromString(paymentMethodId);

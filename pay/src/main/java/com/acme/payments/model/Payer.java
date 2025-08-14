@@ -13,7 +13,7 @@ public class Payer {
 	private UUID payerId;
 	private UUID paymentId;
 	
-	Payer() {}
+	public Payer() {}
 	
 	public Payer(UUID payerId, UUID paymentId) {
 		this.payerId = payerId;

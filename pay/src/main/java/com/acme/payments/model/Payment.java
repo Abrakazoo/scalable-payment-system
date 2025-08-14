@@ -47,7 +47,7 @@ public class Payment {
 	@JsonProperty("orderId")
 	private PaymentOrder order;
 	
-	Payment() {}
+	public Payment() {}
 	
 	public Payment(String id, 
 				   Float amount, 
