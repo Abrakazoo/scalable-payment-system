@@ -9,6 +9,7 @@ import jakarta.persistence.OneToMany;
 
 @Entity
 public class PaymentMethod {
+
 	@Id
 	private UUID id;
 	
