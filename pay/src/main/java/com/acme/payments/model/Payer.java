@@ -1,10 +1,10 @@
 package com.acme.payments.model;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
+import java.util.UUID;
 
 @Entity
 public class Payer {
