@@ -1,47 +1,37 @@
 package com.acme.payments.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.hateoas.CollectionModel;
+import com.acme.payments.controller.assembler.PaymentMethodAssembler;
+import com.acme.payments.controller.assembler.PaymentModelAssembler;
+import com.acme.payments.controller.assembler.UserModelAssembler;
+import com.acme.payments.exception.PaymentNotFoundException;
+import com.acme.payments.model.Payment;
+import com.acme.payments.service.PaymentService;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import com.acme.payments.exception.CreatePaymentErrorException;
-import com.acme.payments.exception.PaymentNotFoundException;
-import com.acme.payments.model.Payer;
-import com.acme.payments.model.Payment;
-import com.acme.payments.model.PaymentMethod;
-import com.acme.payments.model.User;
-import com.acme.payments.repository.PaymentRepository;
-import com.acme.payments.service.ProducerService;
-import com.acme.payments.repository.PayerRepository;
-import com.acme.payments.controller.assembler.PaymentModelAssembler;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
-	
-	private final PaymentRepository paymentRepository;
-	private final PayerRepository payerRepository;
-	private final PaymentModelAssembler assembler;
-	private final ProducerService producerService;
-	
-	PaymentController(PaymentRepository repository,
-			          PayerRepository payerRepository,
-			          PaymentModelAssembler assembler,
-			          ProducerService producerService) {
-		this.paymentRepository = repository;
-		this.payerRepository = payerRepository;
-		this.assembler = assembler;
-		this.producerService = producerService;
-	}
+
+    private final PaymentService paymentService;
+	private final PaymentModelAssembler paymentModelAssembler;
+	private final PaymentMethodAssembler paymentMethodAssembler;
+	private final UserModelAssembler userModelAssembler;
+
+	PaymentController(PaymentService paymentService,
+					  PaymentModelAssembler paymentModelAssembler,
+					  PaymentMethodAssembler paymentMethodAssembler,
+					  UserModelAssembler userModelAssembler) {
+        this.paymentService = paymentService;
+        this.paymentModelAssembler = paymentModelAssembler;
+		this.paymentMethodAssembler = paymentMethodAssembler;
+        this.userModelAssembler = userModelAssembler;
+    }
 
 	/**
 	 * ENDPOINT #1. Create payment
@@ -62,43 +52,26 @@ public class PaymentController {
 	 * @return Http response entity of result - 201 Created
 	 */
 	@PostMapping("/")
+	@Transactional
 	ResponseEntity<?> createPayment(@RequestBody Payment newPayment) {
-		if (paymentRepository.existsById(newPayment.getId())) {
-			throw new CreatePaymentErrorException(newPayment.getId().toString());
-		}
-
-		Payment payment = paymentRepository.save(newPayment);
-		EntityModel<Payment> paymentModel = assembler.toModel(payment);
-		// Save payment to auxiliary "Payer" table for better retrieval by payer id
-		payerRepository.save(new Payer(newPayment.getPayer().getId(),
-				newPayment.getId()));
-		// Publish payment to Kafka queue
-		this.producerService.publishToKafka(payment);
-
+		var payment = paymentService.createPayment(newPayment);
+		EntityModel<Payment> paymentModel = paymentModelAssembler.toModel(payment);
 		return ResponseEntity.created(paymentModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
 				.body(paymentModel);
 	}
 
 	/**
-	 * `PaymentController` should usually have a `findAll` method
-	 * which is:
-	 * 1. Outside the scope of this demo
-	 * 2. A "terrible anti-pattern" for big data tables, without e.g. pagination.
-	 * see: https://vladmihalcea.com/spring-data-findall-anti-pattern/
-	/**
-
 	 * Get payment by id - used for hypermedia links in method responses
-	 * example: http://localhost:8081/payments/12274a47-b6c6-41bf-81af-116416653306
+	 * example: http://localhost:8081/payments/12z274a47-b6c6-41bf-81af-116416653306
 	 * @param id The payment id
 	 * @return The payment entity model or 404 Not Found
 	 * @throws PaymentNotFoundException if payment is not found
 	 */
     @GetMapping("/{id}")
-    public EntityModel<Payment> getPayment(@PathVariable UUID id) {
-    	Payment payment = paymentRepository.findById(id)
-    			.orElseThrow(() -> new PaymentNotFoundException(id));
-
-    	return assembler.toModel(payment);
+    public ResponseEntity<?> findById(@PathVariable UUID id) {
+		return ResponseEntity.ok(paymentModelAssembler.toModel(
+				paymentService.findById(id)
+		));
     }
 
     /**
@@ -110,26 +83,12 @@ public class PaymentController {
      * @return Payment methods associated with payer as a collection model
      */
     @GetMapping("/methods")
-    @ResponseBody
-    CollectionModel<EntityModel<PaymentMethod>> getPaymentMethodsByPayerId(
-    		@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<>();
-    	payerIdList.add(UUID.fromString(payerId));
-    	List<EntityModel<PaymentMethod>> paymentMethodModels = new ArrayList<>();
-    	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
-    	for(Payer payer : payerPayments) {
-    		UUID id = payer.getPaymentId();
-    		Payment payment = paymentRepository.findById(id)
-    				.orElseThrow(() -> new PaymentNotFoundException(id));	
-    		PaymentMethod paymentMethod = payment.getPaymentMethod();
-    		paymentMethodModels.add(EntityModel.of(paymentMethod,
-    				linkTo(methodOn(PaymentMethodController.class)
-    						.getPaymentMethod(paymentMethod.getId())).withSelfRel(),
-        	        linkTo(methodOn(PaymentMethodController.class)
-        	        		.all()).withRel("payments")));
-    	}
-    	return CollectionModel.of(paymentMethodModels, 
-    			linkTo(methodOn(PaymentMethodController.class).all()).withSelfRel());
+	public ResponseEntity<?> findPaymentMethodsByPayerId(@RequestParam(name="payer_id") String payerId) {
+		return ResponseEntity.ok(
+				paymentMethodAssembler.toCollectionModel(
+						paymentService.findPaymentMethodsByPayerId(payerId)
+				)
+		);
     }
     
     /**
@@ -140,21 +99,11 @@ public class PaymentController {
      * @return Payees associated with the payer as a collection model of User entities
      */
     @GetMapping("/payees")
-    @ResponseBody
-    CollectionModel<EntityModel<User>> getPayeesByPayerId(@RequestParam(name="payer_id") String payerId) {
-    	List<UUID> payerIdList = new ArrayList<>();
-    	List<EntityModel<User>> payeeModels = new ArrayList<>();
-    	payerIdList.add(UUID.fromString(payerId));
-    	Iterable<Payer> payerPayments = payerRepository.findAllById(payerIdList);
-    	for(Payer payer : payerPayments) {
-    		UUID id = payer.getPaymentId();
-    		Payment payment = paymentRepository.findById(id)
-    				.orElseThrow(() -> new PaymentNotFoundException(id));
-    		User payee = payment.getPayee();
-    		payeeModels.add(EntityModel.of(payee,
-    				linkTo(methodOn(UserController.class).getUser(payee.getId())).withSelfRel(),
-        	        linkTo(methodOn(UserController.class).all()).withRel("users")));
-    	}
-    	return CollectionModel.of(payeeModels, linkTo(methodOn(UserController.class).all()).withSelfRel());
+    public ResponseEntity<?> findPayeesByPayerId(@RequestParam(name="payer_id") String payerId) {
+		return ResponseEntity.ok(
+				userModelAssembler.toCollectionModel(
+						paymentService.findPayeesByPayerId(payerId)
+				)
+		);
     }
 }
